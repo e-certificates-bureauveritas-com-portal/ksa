@@ -6,35 +6,34 @@
     <title>Document Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
+        /* স্ক্রিনের সব মার্জিন এবং ডিফল্ট প্যাডিং জিরো করা */
         html, body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100%;
             height: 100%;
-            overflow-x: hidden;
-            overflow-y: auto; /* ফাইল বড় হলে স্ক্রল করার সুবিধা */
+            overflow: hidden; /* স্ক্রলবার পুরোপুরি বন্ধ */
             background-color: #f7fafc;
             font-family: sans-serif;
+            touch-action: none;
         }
         
-        #viewer-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            width: 100%;
-            min-height: 100vh;
-            padding: 10px;
-            box-sizing: border-box;
+        body {
+            display: block;
         }
 
+        /* ইমেজটিকে একদম ওপরে জিরো গ্যাপে ফিক্সড করার ম্যাজিক সিএসএস */
         #imagePreview {
-            max-width: 100%;
-            height: auto;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover; /* ইমেজের ভেতরের বাড়তি সাদা অংশ কেটে স্ক্রিনে ফিট করবে */
+            object-position: top center; /* ইমেজটিকে একদম ওপর থেকে শুরু করতে বাধ্য করবে */
             display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-radius: 4px;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
+        /* লোডিং টেক্সট পজিশন */
         #status {
             position: absolute;
             top: 50%;
@@ -42,16 +41,13 @@
             transform: translate(-50%, -50%);
             font-size: 18px;
             color: #4a5568;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <div id="status">Loading Document...</div>
-    <div id="viewer-container">
-        <img id="imagePreview" src="" alt="Document Preview">
-    </div>
+    <div id="status">Loading...</div>
+    <img id="imagePreview" src="" alt="Document Preview">
 
 <script>
     const secretKey = "MyGitHubSecureKey123";
@@ -63,14 +59,11 @@
 
     if (encryptedData) {
         try {
-            // URL-Safe ডাটাকে আবার আগের রূপে ফিরিয়ে আনা
             let formattedData = encryptedData.replace(/-/g, '+').replace(/_/g, '/');
             
-            // ডিক্রিপ্ট (Decryption) করা
             const bytes = CryptoJS.AES.decrypt(formattedData, secretKey);
             const decryptedLink = bytes.toString(CryptoJS.enc.Utf8);
 
-            // লিঙ্ক সঠিক হলে ইমেজ ট্যাগ-এ বসিয়ে দেওয়া
             if (decryptedLink && decryptedLink.startsWith('http')) {
                 statusDiv.style.display = 'none';
                 imgPreview.src = decryptedLink;
